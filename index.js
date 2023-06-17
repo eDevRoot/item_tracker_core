@@ -1,14 +1,27 @@
 const { chromium } = require('playwright');
 const { readFileSync, writeFile  } = require('fs');
 
-async function getResultsFromTodoColeccion(query, browser)
+async function getResultFromURL(url, query, browser, results)
 {
+    if (results == null)
+    {
+        results = []
+    }
+
     const page = await browser.newPage()
-    await page.goto('https://www.todocoleccion.net/')
-    await page.waitForSelector('input[name="bu"]')
-    await page.type('input[name="bu"]', query)
-    await page.keyboard.press('Enter')
-    await page.waitForNavigation({waitUntil: 'networkidle'})
+    await page.goto(url)
+    if (query != null)
+    {
+        await page.waitForSelector('input[name="bu"]')
+        await page.type('input[name="bu"]', query)
+        await page.keyboard.press('Enter')
+        await page.waitForNavigation({waitUntil: 'networkidle'})
+    }
+
+    const next_url =  await page.evaluate(() => {
+        const x = document.querySelector('a.page-link.pager-next')
+        return x == null ? null : x.href
+    })
 
     const r = await page.evaluate(() => {
 
@@ -30,8 +43,23 @@ async function getResultsFromTodoColeccion(query, browser)
 
         return results;
     })
+    results = results.concat(r)
+    if (next_url == null)
+    {
+        return results
+    }
+    return getResultFromURL(next_url, null, browser, results)
+}
 
-    return r
+function writeJSONFile(data)
+{
+    writeFile("./output.json", data, function(err)
+    {
+        if (err)
+        {
+            console.log(err);
+        }
+    })
 }
 
 (async () => {
@@ -39,11 +67,12 @@ async function getResultsFromTodoColeccion(query, browser)
     const settings = JSON.parse(readFileSync('./settings.json'))
 
     let output = [];
+    let results = [];
     const browser =  await chromium.launch()
     for await (const item of settings.queries)
     {
         console.log('Scrapping:', item)
-        const results = await getResultsFromTodoColeccion(item, browser)
+        results = await getResultFromURL('https://www.todocoleccion.net/', item, browser, null)
         output.push({
             query: item,
             results: results
@@ -51,11 +80,7 @@ async function getResultsFromTodoColeccion(query, browser)
     }
     await browser.close()
 
-    writeFile("./output.json", JSON.stringify(output), function(err) {
-        if (err) {
-            console.log(err);
-        }
-    })
+    writeJSONFile(JSON.stringify(output, null, 4))
 
 })()
 
