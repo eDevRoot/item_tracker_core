@@ -1,54 +1,95 @@
 const { chromium } = require('playwright');
 const { readFileSync, writeFile  } = require('fs');
 
-async function getResultFromURL(url, query, browser, results)
+function loadAndCheckSettings()
 {
-    if (results == null)
-    {
-        results = []
-    }
+    const settings = JSON.parse(readFileSync('./settings.json'))
 
+    if (settings.engines == null ||settings.queries == null)
+    {
+        console.log("Settings file is incorrect")
+        return null
+    }
+    return settings
+}
+
+async function getResultFromURL(engine, query, browser, results, page_number = 1)
+{
     const page = await browser.newPage()
-    await page.goto(url)
+    await page.goto(engine.url)
+
     if (query != null)
     {
-        await page.waitForSelector('input[name="bu"]')
-        await page.type('input[name="bu"]', query)
+        await page.waitForSelector(engine.input_selector)
+        await page.type(engine.input_selector, query)
         await page.keyboard.press('Enter')
         await page.waitForNavigation({waitUntil: 'networkidle'})
     }
 
-    const next_url =  await page.evaluate(() => {
-        const x = document.querySelector('a.page-link.pager-next')
+    const next_url =  await page.evaluate((engine) => {
+        const x = document.querySelector(engine.next_selector)
         return x == null ? null : x.href
-    })
+    }, engine)
 
-    const r = await page.evaluate(() => {
+    const r = await page.evaluate((engine) => {
 
         let results = []
 
-        document.querySelectorAll('div._lote_item').forEach((anchor) =>{
+        document.querySelectorAll(engine.items_selector).forEach((anchor) =>{
 
-            const header = anchor.querySelector('div._lote_content-body h3 a')
-            const category = anchor.querySelector('p._lote_item-section a')
-            const price = anchor.querySelector('span.text-nowrap.precio-lote-listado')
+            const header = anchor.querySelector(engine.header_selector)
+            const category = anchor.querySelector(engine.category_selector)
+            const price = anchor.querySelector(engine.price_selector)
 
             results.push({
-                id: anchor.getAttribute('data-id-lote'),
+                id: anchor.getAttribute(engine.id_attribute),
                 title: header.innerText,
                 url: header.href,
                 category: category.innerText,
-                price: price.innerText});
+                price: price.innerText,
+                price_float: parseFloat(price.innerText.replace(' €', ''))
+            });
         })
 
         return results;
-    })
+    }, engine)
+
     results = results.concat(r)
-    if (next_url == null)
+    await page.close()
+    console.log('Page number:', page_number)
+
+    if (next_url == null || page_number >= engine.max_pages)
     {
         return results
     }
-    return getResultFromURL(next_url, null, browser, results)
+    let new_engine = Object.assign({}, engine)
+    new_engine.url = next_url
+    return getResultFromURL(new_engine, null, browser, results, page_number + 1)
+}
+
+function filterAndOrderResults(results, query)
+{
+    if (query.filters != null)
+    {
+        query.filters.forEach((key) => {
+            results = results.filter((item) => {
+                return item.category.toLowerCase().includes(key.toLowerCase())
+            })
+        })
+    }
+
+    if (query.max_price != null)
+    {
+        results = results.filter((item) => {
+            return item.price_float <= query.max_price
+        })
+    }
+
+    results = results.sort(function(a, b){
+        return a.price_float - b.price_float
+    })
+
+    return results
 }
 
 function writeJSONFile(data)
@@ -64,23 +105,28 @@ function writeJSONFile(data)
 
 (async () => {
 
-    const settings = JSON.parse(readFileSync('./settings.json'))
+    const settings = loadAndCheckSettings()
+    if (settings == null) {
+        return
+    }
 
     let output = [];
-    let results = [];
     const browser =  await chromium.launch()
-    for await (const item of settings.queries)
-    {
-        console.log('Scrapping:', item)
-        results = await getResultFromURL('https://www.todocoleccion.net/', item, browser, null)
-        output.push({
-            query: item,
-            results: results
-        })
-    }
-    await browser.close()
 
+    for await (const engine of settings.engines)
+    {
+        for await (const query of settings.queries)
+        {
+            console.log('Scrapping:', query.item)
+            let results = []
+            results = await getResultFromURL(engine, query.item, browser, results)
+            results = filterAndOrderResults(results, query)
+
+            output.push({ query: query.item, results: results })
+        }
+    }
+
+    await browser.close()
     writeJSONFile(JSON.stringify(output, null, 4))
 
 })()
-

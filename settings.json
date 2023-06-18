@@ -1,17 +1,22 @@
 {
+  "engines": [
+    {
+      "url": "https://www.todocoleccion.net/",
+      "max_pages": 10,
+      "input_selector": "input[name='bu']",
+      "next_selector": "a.page-link.pager-next",
+      "items_selector": "div._lote_item",
+      "header_selector": "div._lote_content-body h3 a",
+      "category_selector": "p._lote_item-section a",
+      "price_selector": "span.text-nowrap.precio-lote-listado",
+      "id_attribute": "data-id-lote"
+    }
+  ],
   "queries": [
-    "Crossfire Juego",
-    "Carnibola Juego",
-    "Sobrevive Juego",
-    "Tiburon ataca juego",
-    "Operación juego",
-    "exin basket",
-    "Rallye safari",
-    "Auto cross turbo",
-    "Sts 4x4",
-    "Volante turbo dashboard",
-    "Inkognito juego",
-    "Va-bola juego",
-    "Majorette mustang"
+    {
+      "item": "Monopoly",
+      "filters": ["juego"],
+      "max_price": 20
+    }
   ]
 }
