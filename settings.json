@@ -10,7 +10,9 @@
       "category_selector": "p._lote_item-section a",
       "price_selector": "span.text-nowrap.precio-lote-listado",
       "image_selector": "div._lote_item-img-main-container a picture img",
-      "id_attribute": "data-id-lote"
+      "id_attribute": "data-id-lote",
+      "offers_selector": "div._lote_item-img-main-container a._lote_item-img-footerbox._lote_item-img-footerbox-admite_ofertas",
+      "auctions_selector": "div._lote_item-img-main-container a._lote_item-img-footerbox._lote_item-img-footerbox-subasta"
     }
   ],
   "queries": [

@@ -18,7 +18,7 @@ async function getResultFromURL(engine, query, browser, results, page_number = 1
     const page = await browser.newPage()
     await page.goto(engine.url)
 
-    if (query != null)
+    if (query != null && engine.input_selector != null)
     {
         await page.waitForSelector(engine.input_selector)
         await page.type(engine.input_selector, query)
@@ -28,7 +28,7 @@ async function getResultFromURL(engine, query, browser, results, page_number = 1
 
     const next_url =  await page.evaluate((engine) => {
         let next_url = null
-        if (engine.next_selector != null)
+        if (engine.next_selector != null && document.querySelector(engine.next_selector) != null)
         {
             next_url = document.querySelector(engine.next_selector).href
         }
@@ -55,7 +55,7 @@ async function getResultFromURL(engine, query, browser, results, page_number = 1
             //TITLE
             let title = null
             let item_url = null
-            if (engine.header_selector != null)
+            if (engine.header_selector != null && anchor.querySelector(engine.header_selector) != null)
             {
                 title = anchor.querySelector(engine.header_selector).innerText
                 item_url = anchor.querySelector(engine.header_selector).href
@@ -63,14 +63,14 @@ async function getResultFromURL(engine, query, browser, results, page_number = 1
 
             //IMAGE
             let image_src = null
-            if (engine.image_selector != null)
+            if (engine.image_selector != null && anchor.querySelector(engine.image_selector) != null)
             {
                 image_src = anchor.querySelector(engine.image_selector).src
             }
 
             //CATEGORY
             let category = null
-            if (engine.category_selector != null)
+            if (engine.category_selector != null && anchor.querySelector(engine.category_selector) != null)
             {
                 category = anchor.querySelector(engine.category_selector).innerText
             }
@@ -78,10 +78,24 @@ async function getResultFromURL(engine, query, browser, results, page_number = 1
             //PRICE
             let price = null
             let fprice = null
-            if (engine.price_selector != null)
+            if (engine.price_selector != null && anchor.querySelector(engine.price_selector) != null)
             {
                 price = anchor.querySelector(engine.price_selector).innerText
                 fprice = parseFloat(price.replace(' €', '').replace(',','.'))
+            }
+
+            //OFFERS
+            let admits_offers = null
+            if (engine.offers_selector != null)
+            {
+                admits_offers = anchor.querySelector(engine.offers_selector) != null
+            }
+
+            //AUCTIONS
+            let is_auction = null
+            if (engine.auctions_selector != null)
+            {
+                is_auction = anchor.querySelector(engine.auctions_selector) != null
             }
 
             results.push({
@@ -91,7 +105,9 @@ async function getResultFromURL(engine, query, browser, results, page_number = 1
                 url: item_url,
                 category: category,
                 price: price,
-                price_float: fprice
+                price_float: fprice,
+                admits_offers: admits_offers,
+                is_auction: is_auction
             });
         })
 
@@ -117,6 +133,10 @@ function filterAndOrderResults(results, query)
     {
         query.filters.forEach((key) => {
             results = results.filter((item) => {
+                if (item.category == null)
+                {
+                    return true
+                }
                 return item.category.toLowerCase().includes(key.toLowerCase())
             })
         })
@@ -161,12 +181,12 @@ function writeJSONFile(data)
     {
         for await (const query of settings.queries)
         {
-            console.log('Scrapping:', query.item)
+            console.log(`Scrapping: ${query.item} - Engine: ${engine.url}`)
             let results = []
             results = await getResultFromURL(engine, query.item, browser, results)
             results = filterAndOrderResults(results, query)
 
-            output.push({ query: query.item, results: results })
+            output.push({ query: query.item, engine: engine.url, results: results })
         }
     }
 
