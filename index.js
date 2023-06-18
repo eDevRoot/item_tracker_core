@@ -50,6 +50,10 @@ async function getResultFromURL(engine, query, browser, results, page_number = 1
             if (engine.id_attribute != null)
             {
                 item_id = anchor.getAttribute(engine.id_attribute)
+                if (engine.name === "Ebay")
+                {
+                    item_id = JSON.parse(item_id).trackableId
+                }
             }
 
             //TITLE
@@ -58,6 +62,11 @@ async function getResultFromURL(engine, query, browser, results, page_number = 1
             if (engine.header_selector != null && anchor.querySelector(engine.header_selector) != null)
             {
                 title = anchor.querySelector(engine.header_selector).innerText
+                let i = title.indexOf('\n')
+                if (i > 0)
+                {
+                    title = title.slice(0, i)
+                }
                 item_url = anchor.querySelector(engine.header_selector).href
             }
 
@@ -78,10 +87,32 @@ async function getResultFromURL(engine, query, browser, results, page_number = 1
             //PRICE
             let price = null
             let fprice = null
+            let ftotal = null
             if (engine.price_selector != null && anchor.querySelector(engine.price_selector) != null)
             {
                 price = anchor.querySelector(engine.price_selector).innerText
-                fprice = parseFloat(price.replace(' €', '').replace(',','.'))
+                price = price.replace('+', '')
+                    .replace(' de envío', '')
+                    .replace('estimado', '')
+                    .replace('€', 'EUR')
+                    .trim()
+                fprice = parseFloat(price.replace('€', '').replace(',','.'))
+                ftotal = fprice
+            }
+
+            //SHIPPING
+            let shipping = "Free"
+            let fshipping = 0.0
+            if (engine.shipping_selector != null && anchor.querySelector(engine.shipping_selector) != null)
+            {
+                shipping = anchor.querySelector(engine.shipping_selector).innerText
+                shipping = shipping.replace('+', '')
+                    .replace(' de envío', '')
+                    .replace('estimado', '')
+                    .replace('€', 'EUR')
+                    .trim()
+                fshipping = parseFloat(shipping.replace(' €', '').replace(',','.'))
+                ftotal = fprice + fshipping
             }
 
             //OFFERS
@@ -89,6 +120,10 @@ async function getResultFromURL(engine, query, browser, results, page_number = 1
             if (engine.offers_selector != null)
             {
                 admits_offers = anchor.querySelector(engine.offers_selector) != null
+                if (engine.name === "Ebay" && anchor.querySelector(engine.offers_selector) != null)
+                {
+                    admits_offers = anchor.querySelector(engine.offers_selector).innerText.toLowerCase().includes("oferta")
+                }
             }
 
             //AUCTIONS
@@ -105,7 +140,10 @@ async function getResultFromURL(engine, query, browser, results, page_number = 1
                 url: item_url,
                 category: category,
                 price: price,
+                shipping: shipping,
                 price_float: fprice,
+                shipping_float: fshipping,
+                total_float: ftotal,
                 admits_offers: admits_offers,
                 is_auction: is_auction
             });
@@ -145,12 +183,12 @@ function filterAndOrderResults(results, query)
     if (query.max_price != null)
     {
         results = results.filter((item) => {
-            return item.price_float <= query.max_price
+            return item.total_float <= query.max_price
         })
     }
 
     results = results.sort(function(a, b){
-        return a.price_float - b.price_float
+        return a.total_float - b.total_float
     })
 
     return results
@@ -181,7 +219,7 @@ function writeJSONFile(data)
     {
         for await (const query of settings.queries)
         {
-            console.log(`Scrapping: ${query.item} - Engine: ${engine.url}`)
+            console.log(`Scrapping: ${query.item} - Engine: ${engine.name}`)
             let results = []
             results = await getResultFromURL(engine, query.item, browser, results)
             results = filterAndOrderResults(results, query)

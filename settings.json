@@ -1,18 +1,36 @@
 {
   "engines": [
     {
+      "name": "TodoColeccion",
       "url": "https://www.todocoleccion.net/",
-      "max_pages": 2,
+      "max_pages": 5,
       "input_selector": "input[name='bu']",
-      "next_selector": "a.page-link.pager-next",
       "items_selector": "div._lote_item",
+      "next_selector": "a.page-link.pager-next",
       "header_selector": "div._lote_content-body h3 a",
       "category_selector": "p._lote_item-section a",
       "price_selector": "span.text-nowrap.precio-lote-listado",
+      "shipping_selector": null,
       "image_selector": "div._lote_item-img-main-container a picture img",
       "id_attribute": "data-id-lote",
       "offers_selector": "div._lote_item-img-main-container a._lote_item-img-footerbox._lote_item-img-footerbox-admite_ofertas",
       "auctions_selector": "div._lote_item-img-main-container a._lote_item-img-footerbox._lote_item-img-footerbox-subasta"
+    },
+    {
+      "name": "Ebay",
+      "url": "https://www.ebay.es/",
+      "max_pages": 5,
+      "input_selector": "input[name='_nkw']",
+      "items_selector": "li.s-item.s-item__pl-on-bottom",
+      "next_selector": "nav.pagination a.pagination__next.icon-link",
+      "header_selector": "div.s-item__info.clearfix a.s-item__link",
+      "category_selector": null,
+      "price_selector": "span.s-item__price",
+      "shipping_selector": "span.s-item__shipping.s-item__logisticsCost",
+      "image_selector": "div.s-item__image-wrapper.image-treatment img",
+      "id_attribute": "data-viewport",
+      "offers_selector": "span.s-item__dynamic.s-item__purchaseOptionsWithIcon",
+      "auctions_selector": "span.s-item__bids.s-item__bidCount"
     }
   ],
   "queries": [
