@@ -27,27 +27,71 @@ async function getResultFromURL(engine, query, browser, results, page_number = 1
     }
 
     const next_url =  await page.evaluate((engine) => {
-        const x = document.querySelector(engine.next_selector)
-        return x == null ? null : x.href
+        let next_url = null
+        if (engine.next_selector != null)
+        {
+            next_url = document.querySelector(engine.next_selector).href
+        }
+        return next_url
     }, engine)
 
     const r = await page.evaluate((engine) => {
 
         let results = []
+        if (engine.items_selector == null)
+        {
+            return results
+        }
 
-        document.querySelectorAll(engine.items_selector).forEach((anchor) =>{
+        document.querySelectorAll(engine.items_selector).forEach((anchor, index) => {
 
-            const header = anchor.querySelector(engine.header_selector)
-            const category = anchor.querySelector(engine.category_selector)
-            const price = anchor.querySelector(engine.price_selector)
+            //ID
+            let item_id = index
+            if (engine.id_attribute != null)
+            {
+                item_id = anchor.getAttribute(engine.id_attribute)
+            }
+
+            //TITLE
+            let title = null
+            let item_url = null
+            if (engine.header_selector != null)
+            {
+                title = anchor.querySelector(engine.header_selector).innerText
+                item_url = anchor.querySelector(engine.header_selector).href
+            }
+
+            //IMAGE
+            let image_src = null
+            if (engine.image_selector != null)
+            {
+                image_src = anchor.querySelector(engine.image_selector).src
+            }
+
+            //CATEGORY
+            let category = null
+            if (engine.category_selector != null)
+            {
+                category = anchor.querySelector(engine.category_selector).innerText
+            }
+
+            //PRICE
+            let price = null
+            let fprice = null
+            if (engine.price_selector != null)
+            {
+                price = anchor.querySelector(engine.price_selector).innerText
+                fprice = parseFloat(price.replace(' €', '').replace(',','.'))
+            }
 
             results.push({
-                id: anchor.getAttribute(engine.id_attribute),
-                title: header.innerText,
-                url: header.href,
-                category: category.innerText,
-                price: price.innerText,
-                price_float: parseFloat(price.innerText.replace(' €', ''))
+                id: item_id,
+                title: title,
+                image: image_src,
+                url: item_url,
+                category: category,
+                price: price,
+                price_float: fprice
             });
         })
 

@@ -2,13 +2,14 @@
   "engines": [
     {
       "url": "https://www.todocoleccion.net/",
-      "max_pages": 10,
+      "max_pages": 2,
       "input_selector": "input[name='bu']",
       "next_selector": "a.page-link.pager-next",
       "items_selector": "div._lote_item",
       "header_selector": "div._lote_content-body h3 a",
       "category_selector": "p._lote_item-section a",
       "price_selector": "span.text-nowrap.precio-lote-listado",
+      "image_selector": "div._lote_item-img-main-container a picture img",
       "id_attribute": "data-id-lote"
     }
   ],
