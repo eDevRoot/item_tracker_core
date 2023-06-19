@@ -31,6 +31,22 @@
       "id_attribute": "data-viewport",
       "offers_selector": "span.s-item__dynamic.s-item__purchaseOptionsWithIcon",
       "auctions_selector": "span.s-item__bids.s-item__bidCount"
+    },
+    {
+      "name": "Wallapop",
+      "url": "https://es.wallapop.com/",
+      "max_pages": 5,
+      "input_selector": "input[id='searchbox-form-input']",
+      "items_selector": "a.ItemCardList__item.ng-star-inserted",
+      "next_selector": null,
+      "header_selector": "div.ItemCard__info p.ItemCard__title.my-1",
+      "category_selector": null,
+      "price_selector": "span.ItemCard__price.ItemCard__price--bold",
+      "shipping_selector": null,
+      "image_selector": null,
+      "id_attribute": null,
+      "offers_selector": null,
+      "auctions_selector": null
     }
   ],
   "queries": [
