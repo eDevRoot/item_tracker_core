@@ -7,7 +7,7 @@
       "input_selector": "input[name='bu']",
       "items_selector": "div._lote_item",
       "next_selector": "a.page-link.pager-next",
-      "header_selector": "div._lote_content-body h3 a",
+      "header_selector": "div._lote_content-body h2 a",
       "category_selector": "p._lote_item-section a",
       "price_selector": "span.text-nowrap.precio-lote-listado",
       "shipping_selector": null,
