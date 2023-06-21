@@ -196,7 +196,7 @@ function filterAndOrderResults(results, query)
 
 function writeJSONFile(data)
 {
-    writeFile("./output.json", data, function(err)
+    writeFile("./output_" + Date.now() + ".json", data, function(err)
     {
         if (err)
         {
@@ -214,8 +214,11 @@ function writeJSONFile(data)
 
     let output = [];
     const browser =  await chromium.launch()
+    const engines_enabled = settings.engines.filter((engine) => {
+      return engine.enable
+    })
 
-    for await (const engine of settings.engines)
+    for await (const engine of engines_enabled)
     {
         for await (const query of settings.queries)
         {
