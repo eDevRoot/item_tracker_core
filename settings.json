@@ -1,6 +1,7 @@
 {
   "engines": [
     {
+      "enable": true,
       "name": "TodoColeccion",
       "url": "https://www.todocoleccion.net/",
       "max_pages": 5,
@@ -17,6 +18,7 @@
       "auctions_selector": "div._lote_item-img-main-container a._lote_item-img-footerbox._lote_item-img-footerbox-subasta"
     },
     {
+      "enable": true,
       "name": "Ebay",
       "url": "https://www.ebay.es/",
       "max_pages": 5,
@@ -31,6 +33,40 @@
       "id_attribute": "data-viewport",
       "offers_selector": "span.s-item__dynamic.s-item__purchaseOptionsWithIcon",
       "auctions_selector": "span.s-item__bids.s-item__bidCount"
+    },
+    {
+      "enable": false,
+      "name": "Wallapop",
+      "url": "https://es.wallapop.com/",
+      "max_pages": 5,
+      "input_selector": "input[id='searchbox-form-input']",
+      "items_selector": "a.ItemCardList__item.ng-star-inserted",
+      "next_selector": null,
+      "header_selector": "div.ItemCard__info p.ItemCard__title.my-1",
+      "category_selector": null,
+      "price_selector": "span.ItemCard__price.ItemCard__price--bold",
+      "shipping_selector": null,
+      "image_selector": null,
+      "id_attribute": null,
+      "offers_selector": null,
+      "auctions_selector": null
+    },
+    {
+      "enable": false,
+      "name": "Vinted",
+      "url": "https://www.vinted.es/",
+      "max_pages": 5,
+      "input_selector": "input[name='search_text']",
+      "items_selector": "div.new-item-box__container",
+      "next_selector": "a.web_ui__Pagination__next",
+      "header_selector": null,
+      "category_selector": null,
+      "price_selector": "div.title-content",
+      "shipping_selector": "h4.web_ui__Text__text web_ui__Text__caption.web_ui__Text__left.web_ui__Text__primary",
+      "image_selector": "img.web_ui__Image__content",
+      "id_attribute": "data-testid",
+      "offers_selector": null,
+      "auctions_selector": null
     }
   ],
   "queries": [
